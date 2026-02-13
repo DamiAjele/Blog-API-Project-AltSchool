@@ -2,6 +2,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./Middleware/errorHandler");
 const postRouter = require("./Posts/post.route");
+const authRouter = require("./Auth/auth.route");
 const connectDB = require("./Config/db");
 require("dotenv").config();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 //Routes
 app.use("/v1/posts", postRouter);
+app.use("/v1/auth", authRouter);
 
 app.use(errorHandler);
 

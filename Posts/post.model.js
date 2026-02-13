@@ -1,4 +1,5 @@
-const { Schema, model } = require('mongoose');
+const { Schema} = require('mongoose');
+const mongoose = require('mongoose');
 
 const postSchema = new Schema({
     title: {
@@ -41,8 +42,8 @@ postSchema.index({ state: 1 });
 postSchema.index({ read_count: -1 });
 postSchema.index({ reading_time: 1 });
 postSchema.index({ createdAt: -1 });
-postSchema.index({ author: " ", title: "text", tags: "text" });
+postSchema.index({ author: "name", title: "text", tags: "text" });
 
-const postModel = model('Post', postSchema);
+const postModel = mongoose.model('Post', postSchema);
 
 module.exports = postModel;
