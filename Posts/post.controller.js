@@ -10,7 +10,7 @@ const createPost = async (req, res, next) => {
       content,
       author: user.userId,
     });
-    res.status(201).json(post);
+    res.status(201).json({post});
   } catch (error) {
     next(error);
   }
@@ -19,7 +19,7 @@ const createPost = async (req, res, next) => {
 const getAllPosts = async (req, res, next) => {
   try {
     const posts = await postService.getAllPosts();
-    res.status(200).json(posts);
+    res.status(200).json({posts});
   } catch (error) {
     next(error);
   }
@@ -31,7 +31,7 @@ const getSinglePost = async (req, res, next) => {
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
-    res.status(200).json(post);
+    res.status(200).json({post});
   } catch (error) {
     next(error);
   }
@@ -43,7 +43,7 @@ const updatePost = async (req, res, next) => {
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
-    res.status(200).json(post);
+    res.status(200).json({post});
   } catch (error) {
     next(error);
   }
@@ -51,10 +51,11 @@ const updatePost = async (req, res, next) => {
 
 const deletePost = async (req, res, next) => {
   try {
-    const post = await postService.deletePost(req.params.id);
-    if (!post) {
+    const findPost = await postService.getSinglePost(req.params.id);
+    if (!findPost) {
       return res.status(404).json({ message: "Post not found" });
     }
+    const post = await postService.deletePost(req.params.id);
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
     next(error);
@@ -67,7 +68,7 @@ const updateStateToPublished = async (req, res, next) => {
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
-    res.status(200).json(post);
+    res.status(200).json({post});
   } catch (error) {
     next(error);
   }

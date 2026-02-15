@@ -3,12 +3,19 @@ const calculateReadingTime = require("../Utils/calculateReadingTime");
 const ApiQueryBuilder = require("../Utils/queryBuilder");
 
 const createPost = async (body) => {
-  const { title, description, content, author } = body;
+  const { title, description, content, author, tag } = body;
   try {
     const blogPost = await postModel.findOne({ title });
     if (blogPost) {
       throw new Error("This post already exists");
     }
+
+    const allTags = ["technology", "lifestyle", "education", "health", "travel", "food", "finance", "entertainment"];
+    const isValidTags = tag.every((tg) => allTags.includes(tg));
+    if (!isValidTags) {
+      throw new Error("Select tag")
+    };
+    
     const readingTime = calculateReadingTime(content);
     const post = await postModel.create({
       title,
@@ -16,6 +23,8 @@ const createPost = async (body) => {
       Content: content,
       author,
       readingTime,
+      tags: isValidTags,
+
     });
     return post;
   } catch (error) {
@@ -25,15 +34,17 @@ const createPost = async (body) => {
 
 const getAllPosts = async (queryParams) => {
   try {
-    const posts = new ApiQueryBuilder(
-      postModel.find().populate("author", "name email", "-password"), // populate author field with name and email, excluding password
+    const query = postModel.find();
+    const postQuery = new ApiQueryBuilder(
+      query,
       queryParams,
     )
       .filter()
       .search()
       .sort()
       .paginate();
-    return await posts.query.select("-content"); // exclude content field from the response
+    const posts = await postQuery.query.populate("author", "name email")
+    return { posts: posts };
   } catch (error) {
     throw error;
   }

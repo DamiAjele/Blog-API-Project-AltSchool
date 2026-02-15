@@ -16,7 +16,7 @@ postRouter.get(
   authMiddleware.validateAuth,
   postController.getAllPosts,
 );
-postRouter.get("/get-all-posts-by-notloggedin-users", postController.getAllPosts);
+postRouter.get("/get-posts-by-notloggedin-users", postController.getAllPosts);
 postRouter.get(
   "/get-post/:id",
   authMiddleware.validateAuth,
@@ -25,6 +25,7 @@ postRouter.get(
 postRouter.put(
   "/update-post/:id",
   authMiddleware.validateAuth,
+  postMiddleware.validatePost,
   postController.updatePost,
 );
 postRouter.delete(

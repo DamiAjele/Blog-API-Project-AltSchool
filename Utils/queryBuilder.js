@@ -1,7 +1,7 @@
 class ApiQueryBuilder {
   constructor(query, queryParams) {
-    this.query = query;  // refers to the Mongoose query object
-    this.queryParams = queryParams;  // refers to the query parameters from the request: req.query 
+    this.query = query;  // refers to the Mongoose query object: postModel.find()
+    this.queryParams = queryParams || {}; // refers to the query parameters from the request: req.query 
   }
 
   filter() {
@@ -16,12 +16,14 @@ class ApiQueryBuilder {
   }
 
   search() {
-    if (this.queryParams.search) {
-      this.query = this.query.find({
-        $text: { $search: this.queryParams.search },
-      });
+    if (this.queryParams && this.queryParams.search) {
+      const keyword = {
+        title: { $regex: this.queryParams.search, $options: "i" },
+        tags: { $regex: this.queryParams.search, $options: "i" },
+        "author.firstName": { $regex: this.queryParams.search, $options: "i" },
+      };
+      this.query = this.query.find({ ...keyword });
     }
-
     return this;
   }
 

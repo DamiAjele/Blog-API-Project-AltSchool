@@ -30,6 +30,7 @@ const postSchema = new Schema({
     },
     tags: {
         type: [String],
+        enum: ["technology", "lifestyle", "education", "health", "travel", "food", "finance", "entertainment"],
     },
     Content: {
         type: String,
@@ -42,7 +43,7 @@ postSchema.index({ state: 1 });
 postSchema.index({ read_count: -1 });
 postSchema.index({ reading_time: 1 });
 postSchema.index({ createdAt: -1 });
-postSchema.index({ author: "name", title: "text", tags: "text" });
+postSchema.index({ author: "text", title: "text", tags: "text" });
 
 const postModel = mongoose.model('Post', postSchema);
 

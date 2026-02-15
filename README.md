@@ -1,0 +1,2 @@
+# AltSchool Exam Project
+This project is a robust backend API for a blogging platform built using Node.js, Express, and MongoDB. It supports user authentication (JWT), role-based access control, and full CRUD operations for blog posts. Key features include draft/published states, reading time calculation, and comprehensive test coverage using Jest and Supertest.
