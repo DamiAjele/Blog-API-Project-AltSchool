@@ -55,22 +55,48 @@ describe("Post API", () => {
     });
 
     // Test fetching all posts by logged in users
-    it("should fetch all posts", async () => {
-        await request(app)
-            .post("/v1/posts/add-post")
-            .set("Authorization", `Bearer ${authToken}`)
-            .send({
-                title: "Test Post",
-                content: "This is a test post.",
-                description: "Test description",
-            });
-    
-        const res = await request(app).get(
-          "/v1/posts/get-posts-by-loggedin-users",
-        ).set("Authorization", `Bearer ${authToken}`);
-        console.log(res.body);
-        expect(res.status).toBe(200);
-        expect(res.body).toHaveProperty("posts");
+    it("should fetch only published posts for the logged-in user", async () => {
+      await request(app)
+        .post("/v1/posts/add-post")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+          title: "Integration Test Post",
+          content: "This is a test post.", 
+          description: "Test description",
+          state: "published",
+        });
+
+      // 2. Fetch posts
+      const res = await request(app)
+        .get("/v1/posts/get-posts-by-loggedin-users")
+        .set("Authorization", `Bearer ${authToken}`)
+        .query({ limit: 10, page: 1, search: "Integration Test Post" });
+
+      console.log(res.body);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("posts");
+    });
+
+    //Test for not logged in users
+    it("should fetch only published posts for users not logged in", async () => {
+      await request(app)
+        .post("/v1/posts/add-post")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+          title: "Integration Test Post",
+          content: "This is a test post.",
+          description: "Test description",
+          state: "published",
+        });
+
+      // 2. Fetch posts
+      const res = await request(app)
+        .get("/v1/posts/get-posts-by-notloggedin-users")
+        .query({ limit: 10, page: 1, search: "Integration Test Post" });
+
+      console.log(res.body);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("posts");
     });
 
     // Test fetching a single post by ID

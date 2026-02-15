@@ -30,9 +30,8 @@ const postSchema = new Schema({
     },
     tags: {
         type: [String],
-        enum: ["technology", "lifestyle", "education", "health", "travel", "food", "finance", "entertainment"],
     },
-    Content: {
+    content: {
         type: String,
         required: true,
     }

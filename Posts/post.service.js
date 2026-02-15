@@ -3,27 +3,21 @@ const calculateReadingTime = require("../Utils/calculateReadingTime");
 const ApiQueryBuilder = require("../Utils/queryBuilder");
 
 const createPost = async (body) => {
-  const { title, description, content, author, tag } = body;
+  const { title, description, content, author } = body;
   try {
     const blogPost = await postModel.findOne({ title });
     if (blogPost) {
       throw new Error("This post already exists");
     }
 
-    const allTags = ["technology", "lifestyle", "education", "health", "travel", "food", "finance", "entertainment"];
-    const isValidTags = tag.every((tg) => allTags.includes(tg));
-    if (!isValidTags) {
-      throw new Error("Select tag")
-    };
     
     const readingTime = calculateReadingTime(content);
     const post = await postModel.create({
       title,
       description,
-      Content: content,
+      content: content,
       author,
       readingTime,
-      tags: isValidTags,
 
     });
     return post;
@@ -34,17 +28,29 @@ const createPost = async (body) => {
 
 const getAllPosts = async (queryParams) => {
   try {
-    const query = postModel.find();
-    const postQuery = new ApiQueryBuilder(
-      query,
-      queryParams,
-    )
+    const baseQuery = postModel.find({ state: "published" });
+
+    const features = new ApiQueryBuilder(baseQuery, queryParams)
       .filter()
       .search()
       .sort()
       .paginate();
-    const posts = await postQuery.query.populate("author", "name email")
-    return { posts: posts };
+
+    const posts = await features.query.populate("author", "name email");
+
+    // Get total count for pagination metadata
+    const totalPosts = await postModel.countDocuments({ state: "published" });
+
+    const limit = queryParams.limit * 1 || 20;
+    const page = queryParams.page * 1 || 1;
+    const hasNextPage = page * limit < totalPosts;
+
+    return {
+      posts: posts,
+      totalPosts: totalPosts,
+      hasNextPage: hasNextPage,
+      currentPage: page,
+    };
   } catch (error) {
     throw error;
   }

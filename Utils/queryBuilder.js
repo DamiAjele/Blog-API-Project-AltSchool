@@ -1,50 +1,51 @@
 class ApiQueryBuilder {
   constructor(query, queryParams) {
-    this.query = query;  // refers to the Mongoose query object: postModel.find()
-    this.queryParams = queryParams || {}; // refers to the query parameters from the request: req.query 
+    this.query = query;
+    this.queryParams = queryParams || {};
   }
 
   filter() {
-    const queryField = { ...this.queryParams };
+    const queryObj = { ...this.queryParams };
+    const excludedFields = ["page", "sort", "limit", "fields", "search"];
+    excludedFields.forEach((el) => delete queryObj[el]);
 
-    const excluded = ["page", "limit", "sort", "search"];
-    excluded.forEach((el) => delete queryField[el]);
+    // Advanced filtering (for gte, gt, lte, lt)
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-    this.query = this.query.find(queryField);
-
+    this.query = this.query.find(JSON.parse(queryStr));
     return this;
   }
 
   search() {
-    if (this.queryParams && this.queryParams.search) {
-      const keyword = {
-        title: { $regex: this.queryParams.search, $options: "i" },
-        tags: { $regex: this.queryParams.search, $options: "i" },
-        "author.firstName": { $regex: this.queryParams.search, $options: "i" },
-      };
-      this.query = this.query.find({ ...keyword });
+    if (this.queryParams.search) {
+      const searchStr = this.queryParams.search;
+      this.query = this.query.find({
+        $or: [
+          { title: { $regex: searchStr, $options: "i" } },
+          { tags: { $regex: searchStr, $options: "i" } },
+        ],
+      });
     }
     return this;
   }
 
   sort() {
     if (this.queryParams.sort) {
-      this.query = this.query.sort(this.queryParams.sort);
+      const sortBy = this.queryParams.sort.split(",").join(" ");
+      this.query = this.query.sort(sortBy);
     } else {
       this.query = this.query.sort("-createdAt");
     }
-
     return this;
   }
 
   paginate() {
-    const page = this.queryParams.page * 1 || 1;
-    const limit = this.queryParams.limit * 1 || 20;
-
+    const page = Math.abs(this.queryParams.page) || 1;
+    const limit = Math.abs(this.queryParams.limit) || 20;
     const skip = (page - 1) * limit;
 
     this.query = this.query.skip(skip).limit(limit);
-
     return this;
   }
 }
